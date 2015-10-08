@@ -1,30 +1,33 @@
 var http = require('http'),
-  express =  require('express'),
+  koa = require('koa'),
+  route = require('koa-route'),
+  error = require('koa-error'),
   terminator = require('./terminator');
 
-function example(config) {
-  var app = express();
-  var server = http.createServer(app);
+function example() {
+  var app = koa();
 
-  app.use(terminator(server, config));
-  app.use('/fast', function(req, res) {
-    res.status(200).end();
-  });
-  app.use('/slow', function(req, res) {
-    setTimeout(function() {
-      res.status(200).end();
-    }, 2000);
-  });
-  app.use('/never', function(req, res) {
-  });
-  app.use('/error', function(req, res, next) {
-    next(new Error());
-  });
-  app.use(function(err, req, res, next) {
-    res.status(500).end();
-  });
+  app.use(error());
+  app.use(terminator());
+  app.use(route.get('/fast', function* () {
+    this.status = 200;
+  }));
+  app.use(route.get('/slow', function* () {
+    yield new Promise(function(resolve) {
+      setTimeout(function() {
+        resolve();
+      }, 2000);
+    });
+    this.status = 200;
+  }));
+  app.use(route.get('/never', function* () {
+    throw new Error('should not be caled');
+  }));
+  app.use(route.get('/error', function* () {
+    throw new Error();
+  }));
 
-  return server;
+  return http.createServer(app.callback());
 }
 
 module.exports = example;
