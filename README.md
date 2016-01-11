@@ -1,47 +1,30 @@
 # microservice / terminator
-shuts down the server if an
- error occurs. tries to be nice about it.
+shuts down the server if an error occurs. tries to be nice about it.
 
 ## usage
 
-as middleware:
-
-`app.use(terminator(server[, config]))`
-
-see the example below.
-
-### config
-
-#### timer
-
-milliseconds to wait before calling `process.exit(1)`
-* type: `number` (can be disabled with `false`)
-* default: `5000`
-
-#### uncaughtException
-
-whether or not to terminate on an `uncaughtException` event
-* type: `boolean`
-* default: `true`
-
-## example
+first, register the middleware
 
 ```javascript
-var terminator = require('@microservice/terminator');
+const terminator = require('@microservice/koa-terminator');
 
-var http = require('http');
-var express = require('express');
+app.use(require('koa-error')); // this can come before
+app.use(terminator())
+// everything else comes after
+```
 
-var app = express();
-var server = http.createServer(app);
+then, listen for a `terminate` event
 
-app.use(terminator(server, {
-  timeout: 10000,
-  uncaughtException: true
-});
-app.use(function(req, res, next) {
-  next(new Error());
-});
+```javascript
+const server = app.listen();
 
-server.listen(80);
+process.on('terminate', () => {
+  // the process will exit once existing connections are done
+  server.close();
+  // you could use a timeout here to force shutdown as well.
+  const timer = setTimeout(() => {
+    process.exit(1);
+  }, 5000);
+  timer.unref();
+})
 ```
