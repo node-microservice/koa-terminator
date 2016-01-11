@@ -1,9 +1,9 @@
-var once = require('once'),
+const once = require('once'),
   onFinished = require('on-finished');
 
 module.exports = function() {
   return function* (next) {
-    var ctx = this;
+    const ctx = this;
 
     ctx.request.socket.ref();
 
@@ -15,15 +15,15 @@ module.exports = function() {
         onFinished(ctx.res, function() {
           ctx.request.socket.unref();
 
-          if (ctx.status > 499) {
+          if (ctx.status >= 500) {
             module.exports.terminate();
           }
         });
-        yield* next;
       } catch (err) {
         module.exports.terminate();
         throw err;
       }
+      yield* next;
     }
   };
 };

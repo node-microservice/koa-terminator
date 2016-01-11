@@ -1,21 +1,24 @@
+'use strict';
 /* global describe, it, beforeEach  */
-var assert = require('assert'),
+const assert = require('assert'),
   http = require('http'),
   once = require('once'),
   example = require('./example'),
   terminator = require('./terminator');
 
-var terminated,
+let terminated,
   error,
+  clientError,
   fast,
   slow;
 
 describe('terminator', function() {
   beforeEach(function() {
-    var server = example({timeout: 3000});
-    var connection = server.listen();
-    var port = connection.address().port;
+    const server = example({timeout: 3000});
+    const connection = server.listen();
+    const port = connection.address().port;
 
+    terminated = false;
     terminator.terminate = once(function() {
       terminated = true;
       connection.close();
@@ -25,6 +28,12 @@ describe('terminator', function() {
       host: 'localhost',
       port: port,
       path: '/error'
+    };
+
+    clientError = {
+      host: 'localhost',
+      port: port,
+      path: '/client-error'
     };
 
     fast = {
@@ -38,6 +47,17 @@ describe('terminator', function() {
       port: port,
       path: '/slow'
     };
+  });
+
+  it('does not emit on client errors', function(done) {
+    http.get(clientError, function() {
+      try {
+        assert(terminated === false, 'should not have been terminated');
+        done();
+      } catch (err) {
+        done(err);
+      }
+    });
   });
 
   it('emits terminate event', function(done) {
