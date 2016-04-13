@@ -3,27 +3,27 @@ const once = require('once'),
 
 module.exports = function() {
   return function* (next) {
-    const ctx = this;
+    try {
+      const ctx = this;
 
-    ctx.request.socket.ref();
+      ctx.request.socket.ref();
 
-    if (module.exports.terminate.called) {
-      ctx.headers.Connection = 'close';
-      ctx.status = 503;
-    } else {
-      try {
-        onFinished(ctx.res, function() {
-          ctx.request.socket.unref();
+      onFinished(ctx.res, function() {
+        ctx.request.socket.unref();
+      });
 
-          if (ctx.status >= 500) {
-            module.exports.terminate();
-          }
-        });
-      } catch (err) {
-        module.exports.terminate();
-        throw err;
+      if (module.exports.terminate.called) {
+        ctx.headers.Connection = 'close';
+        ctx.status = 503;
+      } else {
+        yield* next;
       }
-      yield* next;
+    } catch (err) {
+      if (typeof err.status === 'undefined' || err.status >= 500) {
+        module.exports.terminate();
+      }
+
+      throw err;
     }
   };
 };

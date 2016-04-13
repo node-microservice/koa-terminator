@@ -1,6 +1,6 @@
 {
   "name": "@microservice/koa-terminator",
-  "version": "1.0.1",
+  "version": "2.0.0",
   "description": "Terminate a service as gracefully as possible on error; does not travel through time.",
   "main": "terminator.js",
   "scripts": {
@@ -12,17 +12,16 @@
   "author": "Doug Moscrop <doug.moscrop@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "koa": "^1.0.0",
-    "on-finished": "^2.3.0",
-    "once": "^1.3.2"
+    "on-finished": "2.3.0",
+    "once": "1.3.3"
   },
   "devDependencies": {
-    "eslint": "^1.5.1",
-    "http-errors": "^1.3.1",
-    "koa-error": "^1.1.3",
-    "koa-route": "^2.4.2",
-    "mocha": "^2.3.3",
-    "pub": "^0.2.0",
-    "supervisor": "^0.9.1"
+    "eslint": "~2.7.0",
+    "http-errors": "~1.4.0",
+    "koa": "~1.2.0",
+    "koa-error": "~1.1.3",
+    "koa-route": "~2.4.2",
+    "mocha": "~2.4.5",
+    "supervisor": "~0.10.0"
   }
 }

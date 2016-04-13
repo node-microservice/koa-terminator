@@ -8,8 +8,8 @@ first, register the middleware
 ```javascript
 const terminator = require('@microservice/koa-terminator');
 
-app.use(require('koa-error')); // this can come before
-app.use(terminator())
+app.use(require('koa-error')); // catch errors and display error pages like normal
+app.use(terminator()); // this will signal termination on uncaught errors
 // everything else comes after
 ```
 

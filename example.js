@@ -30,6 +30,9 @@ function example() {
   app.use(route.get('/error', function* () {
     throw new Error();
   }));
+  app.use(route.get('/error-nothrow', function* () {
+    this.status = 503;
+  }));
 
   return http.createServer(app.callback());
 }

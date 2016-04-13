@@ -8,6 +8,7 @@ const assert = require('assert'),
 
 let terminated,
   error,
+  errorNoThrow,
   clientError,
   fast,
   slow;
@@ -28,6 +29,12 @@ describe('terminator', function() {
       host: 'localhost',
       port: port,
       path: '/error'
+    };
+
+    errorNoThrow = {
+      host: 'localhost',
+      port: port,
+      path: '/error-nothrow'
     };
 
     clientError = {
@@ -52,6 +59,18 @@ describe('terminator', function() {
   it('does not emit on client errors', function(done) {
     http.get(clientError, function() {
       try {
+        assert(terminated === false, 'should not have been terminated');
+        done();
+      } catch (err) {
+        done(err);
+      }
+    });
+  });
+
+  it('does not emit on explicit error status codes', function(done) {
+    http.get(errorNoThrow, function(res) {
+      try {
+        assert.equal(res.statusCode, 503);
         assert(terminated === false, 'should not have been terminated');
         done();
       } catch (err) {
