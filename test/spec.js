@@ -3,8 +3,8 @@
 const assert = require('assert'),
   http = require('http'),
   once = require('once'),
-  example = require('./example'),
-  terminator = require('./terminator');
+  example = require('../example'),
+  terminator = require('../terminator');
 
 let terminated,
   error,
@@ -15,7 +15,7 @@ let terminated,
 
 describe('terminator', function() {
   beforeEach(function() {
-    const server = example({timeout: 3000});
+    const server = example({ timeout: 3000 });
     const connection = server.listen();
     const port = connection.address().port;
 
@@ -126,17 +126,24 @@ describe('terminator', function() {
     this.timeout(6000);
     this.slow(4000);
 
-    fast.agent = new http.Agent({keepAlive: true});
+    fast.agent = new http.Agent({ keepAlive: true });
 
     http.get(fast, function() {
-      http.get(error, function() {
-          http.get(fast, function() {
-            done(new Error('Should not reach here'));
-          })
-          .on('error', function() {
-            done();
-          });
+      http.get(error, function(res) {
+        try {
+          assert.equal(res.headers.connection, 'close');
+        } catch(e) {
+          done(e);
+          return;
+        }
+
+        http.get(fast, function() {
+          done(new Error('Should not reach here'));
+        })
+        .on('error', function() {
+          done();
         });
+      });
     });
   });
 });

@@ -3,27 +3,26 @@ const once = require('once'),
 
 module.exports = function() {
   return function* (next) {
+    const ctx = this;
+    
     try {
-      const ctx = this;
-
       ctx.request.socket.ref();
 
       onFinished(ctx.res, function() {
         ctx.request.socket.unref();
       });
 
-      if (module.exports.terminate.called) {
-        ctx.headers.Connection = 'close';
-        ctx.status = 503;
-      } else {
-        yield* next;
-      }
+      yield* next;
     } catch (err) {
       if (typeof err.status === 'undefined' || err.status >= 500) {
         module.exports.terminate();
       }
 
       throw err;
+    } finally {
+      if (module.exports.terminate.called) {
+        ctx.headers.Connection = 'close';
+      }
     }
   };
 };
